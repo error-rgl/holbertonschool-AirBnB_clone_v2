@@ -137,7 +137,8 @@ class HBNBCommand(cmd.Cmd):
                     value = value_tmp
                 except:
                     pass
-                setattr(new_instance, key, value) 
+                setattr(new_instance, key, value)
+        storage.new(new_instance)
         storage.save()
         print(new_instance.id)
         #storageatesave()
