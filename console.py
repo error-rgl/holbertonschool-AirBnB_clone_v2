@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """ Console Module """
 import cmd
+from re import A
 import sys
 from models.base_model import BaseModel
 from models.__init__ import storage
@@ -10,7 +11,6 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
-
 
 
 class HBNBCommand(cmd.Cmd):
@@ -34,11 +34,10 @@ class HBNBCommand(cmd.Cmd):
     def preloop(self):
         """Prints if isatty is false"""
         if not sys.__stdin__.isatty():
-            print('(hbnb)')
+            print('(hbnb) ', end='')
 
     def precmd(self, line):
         """Reformat command line for advanced command syntax.
-
         Usage: <class name>.<command>([<id> [<*args> or <**kwargs>]])
         (Brackets denote optional fields in usage example.)
         """
@@ -74,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] =='}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -119,34 +118,35 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        token = args.split()
-        class_name = token[0]
-        #print(args)
+        # For default split(\n \t o \r).
+        tokens = args.split()
+        class_name = tokens[0]
         if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
-            return        
-
+            return
         new_instance = HBNBCommand.classes[class_name]()
-        for tkn in token:
-            if tkn != class_name:
-                (key, value) = tkn.split(sep='=', maxsplit=1)
+        for token in tokens:
+            if token != class_name:
+                (key, value) = token.split(sep='=', maxsplit=1)
+                # Info: All underscores _ must be replace by spaces.
                 value = value.replace('_', ' ')
-                value = value.replace('\"', '')
+                # Info: Remove "".
+                value = value.replace("\"", '')
                 try:
-                    value_tmp = eval(value)
-                    value = value_tmp
-                except:
+                    # Info! Parse value in type of data.
+                    tmp_value = eval(value)
+                    value = tmp_value
+                except BaseException:
                     pass
                 setattr(new_instance, key, value)
         storage.new(new_instance)
         storage.save()
         print(new_instance.id)
-        #storageatesave()
 
     def help_create(self):
         """ Help information for the create method """
         print("Creates a class of any type")
-        print("[Usage]: create <className>\n")
+        print("[Usage]: create <className> <param 1> <param 2> <param 3>...\n")
 
     def do_show(self, args):
         """ Method to show an individual object """
@@ -223,11 +223,11 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all(HBNBCommand.classes[args]).items():
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all().items():
                 print_list.append(str(v))
 
         print(print_list)
@@ -337,5 +337,7 @@ class HBNBCommand(cmd.Cmd):
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
 
+
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
+
