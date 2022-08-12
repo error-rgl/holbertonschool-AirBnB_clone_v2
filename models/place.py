@@ -1,4 +1,4 @@
-!/usr/bin/python3
+#!/usr/bin/python3
 """ Place Module for HBNB project """
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, Float, Integer, ForeignKey, Table
@@ -70,4 +70,4 @@ class Place(BaseModel, Base):
             for key, value in all_amenities.items():
                 if self.id == value.place_id:
                     list_return.append(value)
-		return list_return
+            return list_return
